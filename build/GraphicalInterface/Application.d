@@ -1,4 +1,5 @@
-build/main.o: src/main.cpp src/Tree/ParticlesTree.h src/Tree/Node.h \
+build/GraphicalInterface/Application.o: \
+ src/GraphicalInterface/Application.cpp \
  src/GraphicalInterface/Application.h /usr/local/include/wx-3.3/wx/wx.h \
  /usr/local/include/wx-3.3/wx/defs.h \
  /usr/local/include/wx-3.3/wx/platform.h \
@@ -211,4 +212,8 @@ build/main.o: src/main.cpp src/Tree/ParticlesTree.h src/Tree/Node.h \
  /usr/local/include/wx-3.3/wx/gtk/filectrl.h \
  /usr/local/include/wx-3.3/wx/filectrl.h \
  /usr/local/include/wx-3.3/wx/mdi.h \
- /usr/local/include/wx-3.3/wx/gtk/mdi.h
+ /usr/local/include/wx-3.3/wx/gtk/mdi.h \
+ src/GraphicalInterface/TreeInterface.h \
+ src/GraphicalInterface/../Tree/ParticlesTree.h \
+ src/GraphicalInterface/../Tree/Node.h \
+ src/GraphicalInterface/ParticleMatrixInterface.h

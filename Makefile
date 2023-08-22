@@ -1,7 +1,14 @@
 #CC=x86_64-w64-mingw32-g++
 CC=g++
-CCFLAGS = -c -g -MMD -std=c++17 -Wall 
-LDFLAGS = -g -static -static-libgcc -static-libstdc++
+
+WX_CONFIG := wx-config
+ 
+WX_CXXFLAGS := $(shell $(WX_CONFIG) --cxxflags)
+WX_LIBS := $(shell $(WX_CONFIG) --libs)
+
+
+CCFLAGS = -c -g -MMD -std=c++17
+LDFLAGS = -g -lGL -lGLU
 
 OBJDIR = build
 SRCDIR = src
@@ -16,12 +23,12 @@ TEST = test
 
 $(APP): $(OBJ)
 	@echo "== LINKING EXECUTABLE $(OBJDIR)/$(APP)"
-	@$(CC) $(LDFLAGS) $^ -o $(OBJDIR)/$(APP)
+	@$(CC) -o $(OBJDIR)/$(APP) $^ $(LDFLAGS) $(WX_LIBS) $(LIBS) 
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp 
 	@echo "== COMPILING SOURCE $< INTO $@"
 	@mkdir -p $(@D)
-	@$(CC) $(CCFLAGS) -o $@ $<
+	@$(CC) $(CCFLAGS) -o $@ $< $(WX_CXXFLAGS) 
 
 -include $(DEPENDENCIES)
 

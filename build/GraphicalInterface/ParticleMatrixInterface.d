@@ -1,6 +1,7 @@
-build/main.o: src/main.cpp src/Tree/ParticlesTree.h src/Tree/Node.h \
- src/GraphicalInterface/Application.h /usr/local/include/wx-3.3/wx/wx.h \
- /usr/local/include/wx-3.3/wx/defs.h \
+build/GraphicalInterface/ParticleMatrixInterface.o: \
+ src/GraphicalInterface/ParticleMatrixInterface.cpp \
+ src/GraphicalInterface/ParticleMatrixInterface.h \
+ /usr/local/include/wx-3.3/wx/wx.h /usr/local/include/wx-3.3/wx/defs.h \
  /usr/local/include/wx-3.3/wx/platform.h \
  /usr/local/include/wx-3.3/wx/compiler.h \
  /usr/local/lib/wx/include/gtk3-unicode-3.3/wx/setup.h \
@@ -211,4 +212,6 @@ build/main.o: src/main.cpp src/Tree/ParticlesTree.h src/Tree/Node.h \
  /usr/local/include/wx-3.3/wx/gtk/filectrl.h \
  /usr/local/include/wx-3.3/wx/filectrl.h \
  /usr/local/include/wx-3.3/wx/mdi.h \
- /usr/local/include/wx-3.3/wx/gtk/mdi.h
+ /usr/local/include/wx-3.3/wx/gtk/mdi.h \
+ src/GraphicalInterface/../Tree/ParticlesTree.h \
+ src/GraphicalInterface/../Tree/Node.h

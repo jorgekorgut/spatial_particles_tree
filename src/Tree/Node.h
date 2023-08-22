@@ -1,10 +1,17 @@
 #pragma once
 
+#include <iostream>
+
 class Node
 {
 public:
     Node(int numberOfFarms, int numberOfLeaves, int farm)
     {
+        /*
+        std::cout << "Node Created on farm [";
+        std::cout << farm;
+        std::cout << "]" << std::endl;
+        */
         numberNodeParticlesByFarm = new int[numberOfFarms]();
         numberNodeParticlesByFarm[farm] += 1;
 
@@ -19,11 +26,19 @@ public:
 
     Node *updateNode(int index, int numberOfFarms, int numberOfLeaves, int farm)
     {
-        numberNodeParticlesByFarm[farm] += 1;
+        /*
+        std::cout << index;
+        std::cout << "|";
+        std::cout << farm << std::endl;
+        */
 
         if (children[index] == nullptr)
         {
             children[index] = new Node(numberOfFarms, numberOfLeaves, farm);
+        }
+        else
+        {
+            numberNodeParticlesByFarm[farm] += 1;
         }
 
         return children[index];

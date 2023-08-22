@@ -2,7 +2,7 @@
 #include "doctest.h"
 #include "../src/Tree/ParticlesTree.h"
 
-//TODO : More edge cases
+//TODO : Edge cases
 TEST_CASE("Testing findTreeDepth in ParticlesTree") {
 
 }
