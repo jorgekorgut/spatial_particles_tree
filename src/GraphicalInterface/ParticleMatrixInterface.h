@@ -1,24 +1,35 @@
 #pragma once
 
 #include <wx/wx.h>
+#include "Application.h"
 #include "../Tree/ParticlesTree.h"
 
+class MyFrame;
 
+enum class ParticleTileType
+{
+    EMPTY,
+    CONTAINS,
+    SELECTED
+};
 class ParticleMatrixInterface : public wxPanel
 {
 
 public:
-    ParticleMatrixInterface(wxFrame *parent, ReturnParticleCountByFarm *particlesData);
-    ParticleMatrixInterface(wxFrame *parent);
-
+    ParticleMatrixInterface(MyFrame *parentFrame);
     void updateParticleMatrix(ReturnParticleCountByFarm *particlesData);
+    int *getSelectedTile() { return selectedFarm; }
 
 protected:
     void OnPaint(wxPaintEvent &event);
-    
-private:
-    ReturnParticleCountByFarm *data;
+    void OnLeftUp(wxMouseEvent &event);
 
-    //void DrawData(wxPaintDC &dc, double x, double y, double width, double height, int leavesX, int leavesY);
-    //void DrawSquare(wxPaintDC &dc, int x, int y, double width, double height, int quantity);
+private:
+    void DrawSquare(wxPaintDC &dc, int x, int y, double width, double height, ParticleTileType type);
+
+    MyFrame * parent;
+    ReturnParticleCountByFarm *data;
+    int *selectedFarm = nullptr;
+    int clickScreenX = -1;
+    int clickScreenY = -1;
 };

@@ -1,7 +1,5 @@
 // Start of wxWidgets "Hello World" Program
 #include "Application.h"
-#include "TreeInterface.h"
-#include "ParticleMatrixInterface.h"
 
 bool Application::OnInit()
 {
@@ -11,7 +9,7 @@ bool Application::OnInit()
 }
 
 MyFrame::MyFrame()
-    : wxFrame(nullptr, wxID_ANY, "Application", wxDefaultPosition, wxSize(1500, 500))
+    : wxFrame(nullptr, wxID_ANY, "Application", wxDefaultPosition, wxSize(1700, 500))
 {
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
@@ -36,39 +34,117 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
 
     // FIXME : Pass tree on argument
-    ParticlesTree *particlesTree = new ParticlesTree(700, 400, 100, 4, 2, 2);
+    //ParticlesTree *particlesTree = new ParticlesTree(700, 400, 100, 4, 2, 2);
+    ParticlesTree *particlesTree = new ParticlesTree(700, 400, 25, 4, 4, 2);
+    /*
     particlesTree->addNode(Vector4(0, 0, 0, 1));
     particlesTree->addNode(Vector4(0, 300, 0, 1));
     particlesTree->addNode(Vector4(262.5, 300, 0, 1));
     particlesTree->addNode(Vector4(600, 350, 0, 1));
     particlesTree->addNode(Vector4(700, 400, 0, 1));
-
-    ReturnParticleCountByFarm *particleCountResponse = particlesTree->getParticlesCountByFarm(87.5, 100, 175, 200, 200); // x0,y0,w350,h400,sx2,sy2
-    // ReturnParticleCountByFarm * particleCountResponse = particlesTree->getParticlesCountByFarm(0, 0, 200, 200, 200); // x0,y0,w350,h200
-    // ReturnParticleCountByFarm * particleCountResponse = particlesTree->getParticlesCountByFarm(175, 200, 175, 300, 200); // x175,y200,w175,h200
-
-    // ReturnParticleCountByFarm * particleCountResponse = particlesTree->getParticlesCountByFarm(0, 400, 175, 300, 200); //nullptr
-
-    /*
-    std::cout << "Root: " ;
-    std::cout << particlesTree->getRoot()->getNumberOfParticlesByFarm()[1] <<std::endl;
     */
-    wxPanel *panelLeft = new TreeInterface(this, particlesTree);
-    panelLeft->SetBackgroundColour(wxColor(50, 50, 100));
-    wxPanel *panelRight = new ParticleMatrixInterface(this);
-    panelRight->SetBackgroundColour(wxColor(100, 50, 50));
+    particleMatrixInterface = new ParticleMatrixInterface(this);
+    particleMatrixInterface->SetBackgroundColour(wxColor(100, 50, 50));
 
-    //
-    // TreeInterface *treeInterface =
-    // ParticleMatrixInterface *particleMatrixInterface =
+    treeInterface = new TreeInterface(this, particlesTree);
+    treeInterface->SetBackgroundColour(wxColor(50, 50, 100));
+
+    wxBoxSizer *formWrapper = new wxBoxSizer(wxVERTICAL);
+
+    wxGridSizer *form = new wxGridSizer(5, 2, wxSize(0, 0));
+    wxStaticText *xLabel = new wxStaticText(this, wxID_ANY, "x:");
+    xInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    wxStaticText *yLabel = new wxStaticText(this, wxID_ANY, "y:");
+    yInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    wxStaticText *widthLabel = new wxStaticText(this, wxID_ANY, "width:");
+    widthInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    wxStaticText *heightLabel = new wxStaticText(this, wxID_ANY, "height:");
+    heightInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    wxStaticText *resolutionLabel = new wxStaticText(this, wxID_ANY, "resolution:");
+    resolutionInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+
+    form->Add(xLabel, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    form->Add(xInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+
+    form->Add(yLabel, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    form->Add(yInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+
+    form->Add(widthLabel, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    form->Add(widthInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+
+    form->Add(heightLabel, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    form->Add(heightInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+
+    form->Add(resolutionLabel, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    form->Add(resolutionInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+
+    formWrapper->Add(form, 3, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+
+    wxButton *getParticlesInAreaButton = new wxButton(this, -1, "Search for particles inside the area : ");
+    formWrapper->Add(getParticlesInAreaButton, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    getParticlesInAreaButton->Bind(wxEVT_BUTTON, &MyFrame::OnGetParticlesInAreaButtonClicked, this);
+
+    logInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()), wxTE_MULTILINE);
+    logInput->Disable();
+    formWrapper->Add(logInput, 3, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(panelLeft, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
-    sizer->Add(panelRight, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    sizer->Add(treeInterface, 2, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    sizer->Add(particleMatrixInterface, 2, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    sizer->Add(formWrapper, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
 
     this->SetSizer(sizer);
     this->Show();
-    //
+}
+
+void MyFrame::onFarmUpdate()
+{
+    int numberOfFarms = treeInterface->GetTree()->getNumberOfFarms();
+    int *selectedTileFarms = particleMatrixInterface->getSelectedTile();
+    if (selectedTileFarms != nullptr)
+    {
+        logInput->Clear();
+        std::string result = "Particles by farm : \n";
+        for (int n = 0; n < numberOfFarms; n++)
+        {
+            result += "[";
+            result += std::to_string(n);
+            result += "]    ";
+            result += std::to_string(selectedTileFarms[n]);
+            result += "\n";
+        }
+        (*logInput) << wxString(result);
+    }
+}
+
+void MyFrame::OnGetParticlesInAreaButtonClicked(wxCommandEvent &event)
+{
+    try
+    {
+        double x;
+        bool valid = xInput->GetLineText(0).ToDouble(&x);
+        double y;
+        valid = valid && yInput->GetLineText(0).ToDouble(&y);
+        double width;
+        valid = valid && widthInput->GetLineText(0).ToDouble(&width);
+        double height;
+        valid = valid && heightInput->GetLineText(0).ToDouble(&height);
+        double wantedResolution;
+        valid = valid && resolutionInput->GetLineText(0).ToDouble(&wantedResolution);
+
+        if (!valid)
+        {
+            throw(1);
+        }
+
+        ReturnParticleCountByFarm *data = treeInterface->GetTree()->getParticlesCountByFarm(x, y, width, height, wantedResolution);
+        treeInterface->SetSelectedData(data);
+        particleMatrixInterface->updateParticleMatrix(data);
+    }
+    catch (int errorCode)
+    {
+        std::cerr << "Conversion error" << std::endl;
+    }
 }
 
 void MyFrame::OnExit(wxCommandEvent &event)

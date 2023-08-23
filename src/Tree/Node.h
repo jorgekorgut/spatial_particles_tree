@@ -26,22 +26,23 @@ public:
 
     Node *updateNode(int index, int numberOfFarms, int numberOfLeaves, int farm)
     {
-        /*
-        std::cout << index;
-        std::cout << "|";
-        std::cout << farm << std::endl;
-        */
-
         if (children[index] == nullptr)
         {
-            children[index] = new Node(numberOfFarms, numberOfLeaves, farm);
+            children[index] = new Node(numberOfFarms, numberOfLeaves);
         }
-        else
-        {
-            numberNodeParticlesByFarm[farm] += 1;
-        }
+        children[index]->addFarm(farm);
 
         return children[index];
+    }
+
+    void addFarm(int farm)
+    {
+        numberNodeParticlesByFarm[farm] += 1;
+        /*
+                std::cout << "addFarm : ";
+                std::cout << "\n n=";
+                std::cout << numberNodeParticlesByFarm[farm] << std::endl;
+        */
     }
 
     int *getNumberOfParticlesByFarm()

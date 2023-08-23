@@ -8,7 +8,7 @@ TreeInterface::TreeInterface(wxFrame *parent, ParticlesTree *particlesTree)
     : wxPanel(parent, wxID_ANY, wxDefaultPosition,
               wxDefaultSize, wxBORDER_NONE)
 {
-    ClearTree();
+
     tree = particlesTree;
 
     Connect(wxEVT_PAINT, wxPaintEventHandler(TreeInterface::OnPaint));
@@ -24,15 +24,8 @@ TreeInterface::TreeInterface(wxFrame *parent)
 
 void TreeInterface::OnLeftUp(wxMouseEvent &event)
 {
-
+    std::cout << "Node added.\n";
     wxPoint clickedPos = event.GetPosition();
-
-    std::cout << "Mouse clicked : ";
-    std::cout << clickedPos.x;
-    std::cout << " | ";
-    std::cout << clickedPos.y;
-    std::cout << std::endl;
-
     tree->addNode(Vector4(clickedPos.x, clickedPos.y, 0, 1));
     this->Refresh();
 }
@@ -48,6 +41,11 @@ void TreeInterface::OnPaint(wxPaintEvent &event)
     if (currentNode != nullptr)
     {
         DrawRecursively(dc, 0, 0, tree->getWidth(), tree->getHeight(), currentNode, leavesX, leavesY);
+    }
+
+    if (selectedData != nullptr)
+    {
+        DrawSquare(dc, selectedData->x, selectedData->y, selectedData->sizeX * selectedData->resolutionX, selectedData->sizeY * selectedData->resolutionY, LeafType::SELECTED);
     }
 }
 
@@ -87,14 +85,6 @@ void TreeInterface::DrawRecursively(wxPaintDC &dc, double x, double y, double wi
     }
 }
 
-void TreeInterface::ClearTree()
-{
-    /*
-    for (int i = 0; i < BoardHeight * BoardWidth; ++i)
-        board[i] = NoShape;
-    */
-}
-
 void TreeInterface::DrawSquare(wxPaintDC &dc, int x, int y, double width, double height, LeafType type)
 {
     static wxColour green = wxColour(57, 159, 16);
@@ -102,6 +92,8 @@ void TreeInterface::DrawSquare(wxPaintDC &dc, int x, int y, double width, double
     static wxColour black = wxColour(0, 0, 0);
 
     static wxColour red = wxColour(159, 16, 16);
+
+    static wxColour brightRed = wxColour(255, 16, 16);
 
     if (type == LeafType::HAS_CHILDREN)
     {
@@ -127,6 +119,17 @@ void TreeInterface::DrawSquare(wxPaintDC &dc, int x, int y, double width, double
     {
         int padding = 1;
         dc.SetPen(wxPen(black, 0));
+        dc.SetBrush(*wxTRANSPARENT_BRUSH);
+        dc.DrawRectangle(x + padding,
+                         y + padding,
+                         width - padding,
+                         height - padding);
+    }
+    else if (type == LeafType::SELECTED)
+    {
+    
+    int padding = 1;
+        dc.SetPen(wxPen(brightRed, 1));
         dc.SetBrush(*wxTRANSPARENT_BRUSH);
         dc.DrawRectangle(x + padding,
                          y + padding,

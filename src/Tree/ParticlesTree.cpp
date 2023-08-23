@@ -16,23 +16,7 @@ ParticlesTree::ParticlesTree(double maxWidth, double maxHeight, double minRes, i
     numberOfFarms = nFarms;
     root = new Node(numberOfFarms, leavesX * leavesY);
 }
-/*
-void ParticlesTree::generateTreeFromVector3(std::vector<Vector4> &spatialData)
-{
-    int numberOfLeaves = leavesX * leavesY;
-    for (Vector4 &currentParticle : spatialData)
-    {
-        if (currentParticle.farm < numberOfFarms)
-        {
-            addNode(currentParticle, numberOfLeaves);
-        }
-        else
-        {
-            std::cerr << "[Farm index Error]" << std::endl;
-        }
-    }
-}
-*/
+
 // TODO : Optmize tree construction
 void ParticlesTree::addNode(const Vector4 &spatialData)
 {
@@ -54,16 +38,19 @@ void ParticlesTree::addNode(const Vector4 &spatialData)
     double testResolutionX = minResolution / leavesX;
     double testResolutionY = minResolution / leavesY;
 
+    currentNode->addFarm(spatialData.farm);
+
     while (currentWidth > testResolutionX ||
            currentHeight > testResolutionY)
     {
         currentWidthIndex = std::max((int)std::ceil(currentSpatialDataX / (currentWidth)) - 1, 0); // Intervals are [0,1] ]1,2] ]2,3] ...
         currentHeightIndex = std::max((int)std::ceil(currentSpatialDataY / (currentHeight)) - 1, 0);
+
         /*
-                // std::cout << "position : ";
-                // std::cout << spatialData.x;
-                // std::cout << "|";
-                // std::cout << spatialData.y << std::endl;
+                std::cout << "position : ";
+                std::cout << spatialData.x;
+                std::cout << "|";
+                std::cout << spatialData.y << std::endl;
                 std::cout << "size : ";
                 std::cout << currentWidth;
                 std::cout << "|";
@@ -113,21 +100,29 @@ ReturnParticleCountByFarm *ParticlesTree::getParticlesCountByFarm(double x, doub
     // Snap x and y to the top left corner of the minimal resolution.
     double realX = 0;
     double realY = 0;
+    int countOffsetX = 0;
     while (realX <= x)
     {
         realX += realResolutionX;
+        ++countOffsetX;
     }
     realX -= realResolutionX;
     realX = std::max(0.0, realX);
     realX = std::min(width, realX);
 
+    --countOffsetX;
+
+    int countOffsetY = 0;
     while (realY <= y)
     {
         realY += realResolutionY;
+        ++countOffsetY;
     }
     realY -= realResolutionY;
     realY = std::max(0.0, realY);
     realY = std::min(height, realY);
+
+    --countOffsetY;
 
     // Snap width and height to ceil of x, y and realResolution
 
@@ -151,6 +146,11 @@ ReturnParticleCountByFarm *ParticlesTree::getParticlesCountByFarm(double x, doub
 
     realHeight = std::min(realHeight, height - realY);
 
+    countOffsetX = std::max(0, countOffsetX);
+    countOffsetX = std::min(realSizeX, countOffsetX);
+    countOffsetY = std::max(0, countOffsetY);
+    countOffsetY = std::min(realSizeY, countOffsetY);
+
     for (int i = 0; i < realSizeX * realSizeY; i++)
     {
         int *particlesByFarm = new int[numberOfFarms];
@@ -160,14 +160,12 @@ ReturnParticleCountByFarm *ParticlesTree::getParticlesCountByFarm(double x, doub
         }
         countMatrix->push_back(particlesByFarm);
     }
-
-    std::cout << "== size: ";
-    std::cout << realSizeX;
-    std::cout << " | ";
-    std::cout << realSizeY;
-    std::cout << std::endl;
-
     /*
+        std::cout << "== size: ";
+        std::cout << realSizeX;
+        std::cout << " | ";
+        std::cout << realSizeY;
+        std::cout << std::endl;
         std::cout << "== real: ";
         std::cout << realX;
         std::cout << " | ";
@@ -196,21 +194,37 @@ ReturnParticleCountByFarm *ParticlesTree::getParticlesCountByFarm(double x, doub
 
     Node *currentNode = root;
 
-    searchRecursivelyParticlesCount(currentNode,
-                                    realX,
-                                    realY,
-                                    width,
-                                    height,
-                                    realX,
-                                    realY,
-                                    realWidth,
-                                    realHeight,
-                                    realResolutionX,
-                                    realResolutionY,
-                                    realSizeX,
-                                    realSizeY);
+    if (realResolutionX == width &&
+        realResolutionY == height)
+    {
+        int *globalParticleByFarms = ((*countMatrix)[0]);
 
-    return new ReturnParticleCountByFarm(realSizeX, realSizeY, numberOfFarms, countMatrix, realResolutionX, realResolutionY);
+        int *currentParticleByFarms = currentNode->getNumberOfParticlesByFarm();
+        for (int i = 0; i < numberOfFarms; i++)
+        {
+            globalParticleByFarms[i] = currentParticleByFarms[i];
+        }
+    }
+    else
+    {
+        searchRecursivelyParticlesCount(currentNode,
+                                        0,
+                                        0,
+                                        width,
+                                        height,
+                                        realX,
+                                        realY,
+                                        realWidth,
+                                        realHeight,
+                                        realResolutionX,
+                                        realResolutionY,
+                                        realSizeX,
+                                        realSizeY,
+                                        countOffsetX,
+                                        countOffsetY);
+    }
+
+    return new ReturnParticleCountByFarm(realX, realY, realSizeX, realSizeY, numberOfFarms, countMatrix, realResolutionX, realResolutionY);
 }
 
 void ParticlesTree::searchRecursivelyParticlesCount(Node *currentNode,
@@ -225,7 +239,9 @@ void ParticlesTree::searchRecursivelyParticlesCount(Node *currentNode,
                                                     double realResolutionX,
                                                     double realResolutionY,
                                                     double realSizeX,
-                                                    double realSizeY)
+                                                    double realSizeY,
+                                                    int countOffsetX,
+                                                    int countOffsetY)
 {
     Node **children = currentNode->getChildren();
     double childWidthDepth = currentWidth / leavesX;
@@ -256,16 +272,21 @@ void ParticlesTree::searchRecursivelyParticlesCount(Node *currentNode,
                     double childX = currentX + xIndex * childWidthDepth;
                     double childY = currentY + yIndex * childHeightDepth;
                     /*
-                                        std::cout << "== child: ";
+                                        std::cout << "Child ";
                                         std::cout << childX;
-                                        std::cout << " | ";
+                                        std::cout << "|";
                                         std::cout << childY;
                                         std::cout << std::endl;
+                                        std::cout << "real ";
+                                        std::cout << realX ;
+                                        std::cout << "|";
+                                        std::cout << realY ;
+                                        std::cout << std::endl;
                     */
-                    if (childX >= realX &&
-                        childY >= realY &&
-                        childX + childWidthDepth < realX + realWidth &&
-                        childY + childHeightDepth < realY + realHeight)
+                    if (childX >= realX - currentWidth &&
+                        childY >= realY - currentHeight &&
+                        childX <= realX + realWidth + currentWidth &&
+                        childY <= realY + realHeight + currentHeight)
                     {
                         searchRecursivelyParticlesCount(children[currentIndex],
                                                         childX,
@@ -279,13 +300,27 @@ void ParticlesTree::searchRecursivelyParticlesCount(Node *currentNode,
                                                         realResolutionX,
                                                         realResolutionY,
                                                         realSizeX,
-                                                        realSizeY);
+                                                        realSizeY,
+                                                        countOffsetX,
+                                                        countOffsetY);
                     }
                 }
                 else
                 {
                     double childX = currentX + xIndex * childWidthDepth;
                     double childY = currentY + yIndex * childHeightDepth;
+/*
+                    std::cout << "Child ";
+                    std::cout << childX;
+                    std::cout << "|";
+                    std::cout << childY;
+                    std::cout << std::endl;
+                    std::cout << "real ";
+                    std::cout << realX + realWidth;
+                    std::cout << "|";
+                    std::cout << realY + realHeight;
+                    std::cout << std::endl;
+*/
                     if (childX >= realX &&
                         childY >= realY &&
                         childX < realX + realWidth &&
@@ -293,8 +328,13 @@ void ParticlesTree::searchRecursivelyParticlesCount(Node *currentNode,
                     {
                         int currentWidthIndex = (int)std::floor(childX / (realResolutionX)); // Intervals are [0,1] ]1,2] ]2,3] ...
                         int currentHeightIndex = (int)std::floor(childY / (realResolutionY));
-
-                        int *globalParticleByFarms = ((*countMatrix)[currentWidthIndex + realSizeX * currentHeightIndex]);
+                        int compactedIndex = (currentWidthIndex - countOffsetX) + realSizeX * (currentHeightIndex - countOffsetY);
+/*
+                        std::cout << "RealIndex ";
+                        std::cout << compactedIndex;
+                        std::cout << std::endl;
+*/
+                        int *globalParticleByFarms = ((*countMatrix)[compactedIndex]);
                         /*
                                                 std::cout << "== SelectedIndex: ";
                                                 std::cout << currentWidthIndex;

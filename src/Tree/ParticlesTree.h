@@ -22,15 +22,19 @@ public:
 class ReturnParticleCountByFarm
 {
 public:
-    ReturnParticleCountByFarm(int sx, int sy, int nFarms, std::vector<int *> *countMatrix, double resX, double resY)
+    ReturnParticleCountByFarm(double posX, double posY, int sx, int sy, int nFarms, std::vector<int *> *countMatrix, double resX, double resY)
     {
+        x = posX;
+        y = posY;
         sizeX = sx;
         sizeY = sy;
-        numberOfFarms= nFarms;
+        numberOfFarms = nFarms;
         countParticlesMatrix = countMatrix;
         resolutionX = resX;
         resolutionY = resY;
     }
+    double x;
+    double y;
     int sizeX;
     int sizeY;
     std::vector<int *> *countParticlesMatrix;
@@ -93,6 +97,8 @@ public:
         return height;
     }
 
+    int getNumberOfFarms() { return numberOfFarms; }
+
     int getTreeDepth();
 
 private:
@@ -108,7 +114,9 @@ private:
                                          double realResolutionX,
                                          double realResolutionY,
                                          double realSizeX,
-                                         double realSizeY);
+                                         double realSizeY,
+                                         int countOffsetX,
+                                         int countOffsetY);
 
     Node *root = nullptr;
     double width;
