@@ -34,6 +34,9 @@ private:
     wxTextCtrl *heightInput;
     wxTextCtrl *resolutionInput;
 
+    wxTextCtrl *loadDataTimeElapsedInput;
+    wxTextCtrl *searchTimeElapsedInput;
+
     wxTextCtrl *logInput;
 };
 

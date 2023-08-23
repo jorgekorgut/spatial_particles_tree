@@ -1,5 +1,7 @@
 // Start of wxWidgets "Hello World" Program
 #include "Application.h"
+#include <chrono>	 // timing libraries
+#include <sstream>
 
 bool Application::OnInit()
 {
@@ -9,7 +11,7 @@ bool Application::OnInit()
 }
 
 MyFrame::MyFrame()
-    : wxFrame(nullptr, wxID_ANY, "Application", wxDefaultPosition, wxSize(1700, 500))
+    : wxFrame(nullptr, wxID_ANY, "Application", wxDefaultPosition, wxSize(1700, 700))
 {
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
@@ -34,8 +36,8 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
 
     // FIXME : Pass tree on argument
-    //ParticlesTree *particlesTree = new ParticlesTree(700, 400, 100, 4, 2, 2);
-    ParticlesTree *particlesTree = new ParticlesTree(700, 400, 25, 4, 4, 2);
+    // ParticlesTree *particlesTree = new ParticlesTree(700, 400, 100, 4, 2, 2);
+    ParticlesTree *particlesTree = new ParticlesTree(600, 600, 1, 4, 4, 2);
     /*
     particlesTree->addNode(Vector4(0, 0, 0, 1));
     particlesTree->addNode(Vector4(0, 300, 0, 1));
@@ -51,17 +53,19 @@ MyFrame::MyFrame()
 
     wxBoxSizer *formWrapper = new wxBoxSizer(wxVERTICAL);
 
+    wxSize rightPanelSize = wxSize(60,50);
+
     wxGridSizer *form = new wxGridSizer(5, 2, wxSize(0, 0));
     wxStaticText *xLabel = new wxStaticText(this, wxID_ANY, "x:");
-    xInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    xInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize);
     wxStaticText *yLabel = new wxStaticText(this, wxID_ANY, "y:");
-    yInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    yInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize);
     wxStaticText *widthLabel = new wxStaticText(this, wxID_ANY, "width:");
-    widthInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    widthInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize);
     wxStaticText *heightLabel = new wxStaticText(this, wxID_ANY, "height:");
-    heightInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    heightInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize);
     wxStaticText *resolutionLabel = new wxStaticText(this, wxID_ANY, "resolution:");
-    resolutionInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()));
+    resolutionInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize);
 
     form->Add(xLabel, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
     form->Add(xInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
@@ -84,14 +88,29 @@ MyFrame::MyFrame()
     formWrapper->Add(getParticlesInAreaButton, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
     getParticlesInAreaButton->Bind(wxEVT_BUTTON, &MyFrame::OnGetParticlesInAreaButtonClicked, this);
 
-    logInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(FromDIP(300), wxDefaultSize.GetHeight()), wxTE_MULTILINE);
+    wxGridSizer *timeWrapper = new wxGridSizer(2, 2, wxSize(0, 0));
+
+    wxStaticText *loadDataTimeElapsedLabel = new wxStaticText(this, wxID_ANY, "loadDataTimeElapsed (e-6) : ");
+    loadDataTimeElapsedInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize);
+    loadDataTimeElapsedInput->Disable();
+    wxStaticText *searchTimeElapsedLabel = new wxStaticText(this, wxID_ANY, "searchTimeElapsed (e-6) : ");
+    searchTimeElapsedInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize);
+    searchTimeElapsedInput->Disable();
+
+    timeWrapper->Add(loadDataTimeElapsedLabel, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    timeWrapper->Add(loadDataTimeElapsedInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    timeWrapper->Add(searchTimeElapsedLabel, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    timeWrapper->Add(searchTimeElapsedInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    formWrapper->Add(timeWrapper, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+
+    logInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize, wxTE_MULTILINE);
     logInput->Disable();
-    formWrapper->Add(logInput, 3, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    formWrapper->Add(logInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-    sizer->Add(treeInterface, 2, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
-    sizer->Add(particleMatrixInterface, 2, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
-    sizer->Add(formWrapper, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    sizer->Add(treeInterface, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    sizer->Add(particleMatrixInterface, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    sizer->Add(formWrapper, 0, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
 
     this->SetSizer(sizer);
     this->Show();
@@ -136,8 +155,18 @@ void MyFrame::OnGetParticlesInAreaButtonClicked(wxCommandEvent &event)
         {
             throw(1);
         }
-
+        
+        auto const start_time = std::chrono::steady_clock::now();
+        
         ReturnParticleCountByFarm *data = treeInterface->GetTree()->getParticlesCountByFarm(x, y, width, height, wantedResolution);
+        
+        auto const end_time = std::chrono::steady_clock::now();
+
+        searchTimeElapsedInput->Clear();
+        std::stringstream timeElapsed;
+        timeElapsed << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
+        (*searchTimeElapsedInput) << wxString(timeElapsed.str());
+
         treeInterface->SetSelectedData(data);
         particleMatrixInterface->updateParticleMatrix(data);
     }

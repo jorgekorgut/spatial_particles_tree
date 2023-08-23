@@ -126,14 +126,11 @@ ReturnParticleCountByFarm *ParticlesTree::getParticlesCountByFarm(double x, doub
 
     // Snap width and height to ceil of x, y and realResolution
 
-    int realSizeX = 1;
-    int realSizeY = 1;
     double realWidth = realResolutionX;
     double realHeight = realResolutionY;
     while (realWidth < (wantedWidth + x - realX))
     {
         realWidth += realResolutionX;
-        realSizeX += 1;
     }
 
     realWidth = std::min(realWidth, width - realX);
@@ -141,10 +138,12 @@ ReturnParticleCountByFarm *ParticlesTree::getParticlesCountByFarm(double x, doub
     while (realHeight < wantedHeight + y - realY)
     {
         realHeight += realResolutionY;
-        realSizeY += 1;
     }
 
     realHeight = std::min(realHeight, height - realY);
+
+    int realSizeX = std::floor(realWidth / realResolutionX);
+    int realSizeY = std::floor(realHeight / realResolutionY);
 
     countOffsetX = std::max(0, countOffsetX);
     countOffsetX = std::min(realSizeX, countOffsetX);
@@ -160,33 +159,33 @@ ReturnParticleCountByFarm *ParticlesTree::getParticlesCountByFarm(double x, doub
         }
         countMatrix->push_back(particlesByFarm);
     }
-    /*
-        std::cout << "== size: ";
-        std::cout << realSizeX;
-        std::cout << " | ";
-        std::cout << realSizeY;
-        std::cout << std::endl;
-        std::cout << "== real: ";
-        std::cout << realX;
-        std::cout << " | ";
-        std::cout << realY;
-        std::cout << std::endl;
-        std::cout << "== width/height: ";
-        std::cout << realWidth;
-        std::cout << " | ";
-        std::cout << realHeight;
-        std::cout << std::endl;
-        std::cout << "resolutionX/resolutionY: ";
-        std::cout << realResolutionX;
-        std::cout << " | ";
-        std::cout << realResolutionY;
-        std::cout << std::endl;
-        std::cout << "leavesX/leavesY: ";
-        std::cout << leavesX;
-        std::cout << " | ";
-        std::cout << leavesY;
-        std::cout << std::endl;
-    */
+/*
+    std::cout << "== size: ";
+    std::cout << realSizeX;
+    std::cout << " | ";
+    std::cout << realSizeY;
+    std::cout << std::endl;
+    std::cout << "== real: ";
+    std::cout << realX;
+    std::cout << " | ";
+    std::cout << realY;
+    std::cout << std::endl;
+    std::cout << "== width/height: ";
+    std::cout << realWidth;
+    std::cout << " | ";
+    std::cout << realHeight;
+    std::cout << std::endl;
+    std::cout << "resolutionX/resolutionY: ";
+    std::cout << realResolutionX;
+    std::cout << " | ";
+    std::cout << realResolutionY;
+    std::cout << std::endl;
+    std::cout << "leavesX/leavesY: ";
+    std::cout << leavesX;
+    std::cout << " | ";
+    std::cout << leavesY;
+    std::cout << std::endl;
+*/
     if (realHeight == 0 || realWidth == 0)
     {
         return nullptr;
@@ -309,18 +308,18 @@ void ParticlesTree::searchRecursivelyParticlesCount(Node *currentNode,
                 {
                     double childX = currentX + xIndex * childWidthDepth;
                     double childY = currentY + yIndex * childHeightDepth;
-/*
-                    std::cout << "Child ";
-                    std::cout << childX;
-                    std::cout << "|";
-                    std::cout << childY;
-                    std::cout << std::endl;
-                    std::cout << "real ";
-                    std::cout << realX + realWidth;
-                    std::cout << "|";
-                    std::cout << realY + realHeight;
-                    std::cout << std::endl;
-*/
+                    /*
+                                        std::cout << "Child ";
+                                        std::cout << childX;
+                                        std::cout << "|";
+                                        std::cout << childY;
+                                        std::cout << std::endl;
+                                        std::cout << "real ";
+                                        std::cout << realX + realWidth;
+                                        std::cout << "|";
+                                        std::cout << realY + realHeight;
+                                        std::cout << std::endl;
+                    */
                     if (childX >= realX &&
                         childY >= realY &&
                         childX < realX + realWidth &&
@@ -329,11 +328,11 @@ void ParticlesTree::searchRecursivelyParticlesCount(Node *currentNode,
                         int currentWidthIndex = (int)std::floor(childX / (realResolutionX)); // Intervals are [0,1] ]1,2] ]2,3] ...
                         int currentHeightIndex = (int)std::floor(childY / (realResolutionY));
                         int compactedIndex = (currentWidthIndex - countOffsetX) + realSizeX * (currentHeightIndex - countOffsetY);
-/*
-                        std::cout << "RealIndex ";
-                        std::cout << compactedIndex;
-                        std::cout << std::endl;
-*/
+                        /*
+                                                std::cout << "RealIndex ";
+                                                std::cout << compactedIndex;
+                                                std::cout << std::endl;
+                        */
                         int *globalParticleByFarms = ((*countMatrix)[compactedIndex]);
                         /*
                                                 std::cout << "== SelectedIndex: ";
