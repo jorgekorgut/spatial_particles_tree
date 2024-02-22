@@ -24,6 +24,7 @@ private:
     void OnAbout(wxCommandEvent &event);
 
     void OnGetParticlesInAreaButtonClicked(wxCommandEvent &event);
+    void OnSearchWithoutDrawingButtonClicked(wxCommandEvent &event);
 
     ParticleMatrixInterface *particleMatrixInterface;
     TreeInterface *treeInterface;

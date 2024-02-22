@@ -37,7 +37,7 @@ MyFrame::MyFrame()
 
     // FIXME : Pass tree on argument
     // ParticlesTree *particlesTree = new ParticlesTree(700, 400, 100, 4, 2, 2);
-    ParticlesTree *particlesTree = new ParticlesTree(600, 600, 1, 4, 4, 2);
+    ParticlesTree *particlesTree = new ParticlesTree(600, 600, 1, 5, 5, 2);
     /*
     particlesTree->addNode(Vector4(0, 0, 0, 1));
     particlesTree->addNode(Vector4(0, 300, 0, 1));
@@ -53,7 +53,7 @@ MyFrame::MyFrame()
 
     wxBoxSizer *formWrapper = new wxBoxSizer(wxVERTICAL);
 
-    wxSize rightPanelSize = wxSize(60,50);
+    wxSize rightPanelSize = wxSize(60,25);
 
     wxGridSizer *form = new wxGridSizer(5, 2, wxSize(0, 0));
     wxStaticText *xLabel = new wxStaticText(this, wxID_ANY, "x:");
@@ -84,9 +84,15 @@ MyFrame::MyFrame()
 
     formWrapper->Add(form, 3, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
 
-    wxButton *getParticlesInAreaButton = new wxButton(this, -1, "Search for particles inside the area : ");
-    formWrapper->Add(getParticlesInAreaButton, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    wxBoxSizer *searchWrapper = new wxBoxSizer(wxVERTICAL);
+    wxButton *getParticlesInAreaButton = new wxButton(this, -1, "Search for particles inside the area");
+    searchWrapper->Add(getParticlesInAreaButton, 2, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
     getParticlesInAreaButton->Bind(wxEVT_BUTTON, &MyFrame::OnGetParticlesInAreaButtonClicked, this);
+    wxButton *searchWithoutDrawingButton = new wxButton(this, -1, "Search (withoutDrawing)");
+    searchWrapper->Add(searchWithoutDrawingButton, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    searchWithoutDrawingButton->Bind(wxEVT_BUTTON, &MyFrame::OnSearchWithoutDrawingButtonClicked, this);
+
+    formWrapper->Add(searchWrapper, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
 
     wxGridSizer *timeWrapper = new wxGridSizer(2, 2, wxSize(0, 0));
 
@@ -103,9 +109,9 @@ MyFrame::MyFrame()
     timeWrapper->Add(searchTimeElapsedInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
     formWrapper->Add(timeWrapper, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
 
-    logInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, rightPanelSize, wxTE_MULTILINE);
+    logInput = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(60,100), wxTE_MULTILINE);
     logInput->Disable();
-    formWrapper->Add(logInput, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
+    formWrapper->Add(logInput, 2, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
 
     wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
     sizer->Add(treeInterface, 1, wxEXPAND | wxLEFT | wxTOP | wxRIGHT, 10);
@@ -169,6 +175,43 @@ void MyFrame::OnGetParticlesInAreaButtonClicked(wxCommandEvent &event)
 
         treeInterface->SetSelectedData(data);
         particleMatrixInterface->updateParticleMatrix(data);
+    }
+    catch (int errorCode)
+    {
+        std::cerr << "Conversion error" << std::endl;
+    }
+}
+
+void MyFrame::OnSearchWithoutDrawingButtonClicked(wxCommandEvent &event)
+{
+    try
+    {
+        double x;
+        bool valid = xInput->GetLineText(0).ToDouble(&x);
+        double y;
+        valid = valid && yInput->GetLineText(0).ToDouble(&y);
+        double width;
+        valid = valid && widthInput->GetLineText(0).ToDouble(&width);
+        double height;
+        valid = valid && heightInput->GetLineText(0).ToDouble(&height);
+        double wantedResolution;
+        valid = valid && resolutionInput->GetLineText(0).ToDouble(&wantedResolution);
+
+        if (!valid)
+        {
+            throw(1);
+        }
+        
+        auto const start_time = std::chrono::steady_clock::now();
+        
+        ReturnParticleCountByFarm *data = treeInterface->GetTree()->getParticlesCountByFarm(x, y, width, height, wantedResolution);
+        
+        auto const end_time = std::chrono::steady_clock::now();
+
+        searchTimeElapsedInput->Clear();
+        std::stringstream timeElapsed;
+        timeElapsed << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
+        (*searchTimeElapsedInput) << wxString(timeElapsed.str());
     }
     catch (int errorCode)
     {
